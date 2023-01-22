@@ -58,6 +58,7 @@ String DataString =""; // holds the data to be written to the SD card
 
 
 /* Your Sensor Globals ******************************************************************/
+// YOUR CODE HERE: Your Sensor may need some specific libraries include them here 
 int SensorReading1 = 0;       // Pseudo Code: Replace with your Senor Data example in case it`s integer
 float SensorReading2 = 0.00;  // Pseudo Code: Replace with your Senor Data example in case it`s float
 
@@ -76,12 +77,13 @@ void setup () {
    
     Wire.begin();
     delay(500);
+
     Serial.print("Initializing SD card..."); 
-    if (!SD.begin(chipSelect)) {
-      Serial.println("SD Card initialization failed!");
-      delay(2000);
-      return; // don't do anything more: THE TRACKER ONLY WORKS IF AN SD CARD IS DETECTED IN THE SDCARD READER
-    }
+      if (!SD.begin(chipSelect)) {
+        Serial.println("SD Card initialization failed!");
+        delay(2000);
+        return; // don't do anything more: THE TRACKER ONLY WORKS IF AN SD CARD IS DETECTED IN THE SDCARD READER
+      }
     Serial.println("SD card initialized.");
 
 
@@ -89,6 +91,7 @@ void setup () {
 
     int n = 0;
     snprintf(filename, sizeof(filename), "Track%03d.csv", n); // includes a three-digit sequence number in the file name
+    
     while (SD.exists(filename)) {
       n++;
       delay(100);
