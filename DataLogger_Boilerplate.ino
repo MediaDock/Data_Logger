@@ -27,13 +27,12 @@
                 #############################                                   
                 #############################                                   
 
-                Based on: Seeeduino xiao
-                Built for a Workshop at MediaDock HSLU 
+                Hardware used: Seeeduino xiao & DS3231 Module                
+                Built for a Workshop at MediaDock HSLU D&K
                 Based on the following Examples: 
                 https://rydepier.wordpress.com/2015/08/07/using-an-sd-card-reader-to-store-and-retrieve-data-with-arduino/
                 https://howtomechatronics.com/tutorials/arduino/arduino-sd-card-data-logging-excel-tutorial/
 */
-
 
 int MakeABreak = 2000; // write every ... Milliseconds 
 
