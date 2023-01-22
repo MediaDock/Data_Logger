@@ -29,6 +29,9 @@
 
                 Based on: Seeeduino xiao
                 Built for a Workshop at MediaDock HSLU 
+                Based on the following Examples: 
+                https://rydepier.wordpress.com/2015/08/07/using-an-sd-card-reader-to-store-and-retrieve-data-with-arduino/
+                https://howtomechatronics.com/tutorials/arduino/arduino-sd-card-data-logging-excel-tutorial/
 */
 
 
@@ -124,7 +127,9 @@ void loop () {
 /****************************************************************************************/
 
 void GetSensorData(){
-  // YOUR CODE HERE: Do Something to read your Sensor Data
+  // YOUR CODE HERE: Do Something to read your Sensor Data in this Function
+  // IMPORTANT: Save your Data as a Variable called SensorReading1 or SensorReading2 
+  // This SensorReadingX Variables will be passed to the GetDataString Function for further Processing
 }
 
 
@@ -139,7 +144,7 @@ void GetDataString(){
                  String(now.month()) +    
                  "." + 
                  String(now.year()) + 
-                 "," +                    // Commas are used in CSV to indicate a new row
+                 "," +                    // Commas are used in CSV to indicate a new column
                  String(now.hour()) +
                  ":" + 
                  String(now.minute()) +
