@@ -31,17 +31,19 @@
                 Built for a Workshop at MediaDock HSLU D&K
                 Based on the following Examples: 
                 https://rydepier.wordpress.com/2015/08/07/using-an-sd-card-reader-to-store-and-retrieve-data-with-arduino/
-                https://howtomechatronics.com/tutorials/arduino/arduino-sd-card-data-logging-excel-tutorial/
 */
 
 int MakeABreak = 2000; // write every ... Milliseconds 
 
 /* Realtime Clock Globals **************************************************************/
-#include <Wire.h>
-#include <DS3231.h>
-RTClib myRTC;
+#include <RTClib.h> // tested with 2.1.0 
+RTC_DS3231 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
 
 // To set the realtimeclock on to the correct Date and Time run the Examples > DS3231 > DS3231_set.ino first  
+
+
 
 /* SD Card Globals **********************************************************************/
 // SD Card max Size: 16GB ---> FAT16 or FAT32 Formatted 
@@ -71,12 +73,26 @@ float SensorReading2 = 0.00;  // Pseudo Code: Replace with your Senor Data examp
 void setup () {
     Serial.begin(57600);
 
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+    while (1) delay(10);
+  }
+
+  if (rtc.lostPower()) {
+    Serial.println("RTC lost power, let's set the time!");
+    // When time needs to be set on a new device, or after a power loss, the
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // This line sets the RTC with an explicit date & time, for example to set
+    // January 21, 2014 at 3am you would call:
+    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  }
+
+
 
   /**SD Card Module Init *******************************************/
    
-    Wire.begin();
-    delay(500);
-
     Serial.print("Initializing SD card..."); 
       if (!SD.begin(chipSelect)) {
         Serial.println("SD Card initialization failed!");
@@ -116,7 +132,6 @@ void setup () {
 
 void loop () {
     delay(MakeABreak);   
-
     GetSensorData();
     GetDataString();
     SaveData();
@@ -140,11 +155,11 @@ void GetSensorData(){
 /****************************************************************************************/
 
 void GetDataString(){
-    DateTime now = myRTC.now();
+    DateTime now = rtc.now();
     DataString = String(now.day()) +      // Day Value from RTC
-                 "." +                    // Character to Format Date a bit nicer
+                 "/" +                    // Character to Format Date a bit nicer
                  String(now.month()) +    
-                 "." + 
+                 "/" + 
                  String(now.year()) + 
                  "," +                    // Commas are used in CSV to indicate a new column
                  String(now.hour()) +
