@@ -120,7 +120,6 @@ void setup()
 
     Serial.print("new File initialized: ");
     Serial.println(F(filename));
-    Serial.println("Setup Completed!");
 
   /*RTC Initialization **********************************************/
   
@@ -138,13 +137,14 @@ void setup()
 
   /*BME Initialization **********************************************/
    
-   Serial.println(F("BME280 test"));
    unsigned status;
    status = bme.begin(0x76);  
    
    if (!status) {
         Serial.println(F("BME280 allocation failed"));        
     }
+  
+  Serial.println("Setup Completed!");
 
 }
 
@@ -222,7 +222,7 @@ void SaveData(){
       if (myFile){
         myFile.println(DataString);
         myFile.close(); // close the file
-        Serial.println("new Line of Data saved to SD Card");
+        Serial.println("Data saved to SD Card");
       }
     }
     else{
