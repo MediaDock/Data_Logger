@@ -71,6 +71,7 @@ float SensorReading2 = 0.00;  // Pseudo Code: Replace with your Senor Data examp
 
 void setup () {
     Serial.begin(57600);
+    while (! Serial); 
   /**SD Card Module Init *******************************************/
     Serial.print("Initializing SD card..."); 
       if (!SD.begin(chipSelect)) {
