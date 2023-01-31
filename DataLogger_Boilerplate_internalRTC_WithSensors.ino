@@ -32,6 +32,8 @@
                 It puts the Xiao into DeepSleep between Sensorreadings and Data Storage.
                 But the Timestamp starts at 0:0:0 each time the System is powered up...
                 If you liike tho have the accurate Time and Date use a RTC module like DS3231 
+
+                In this Example we are using the BME 280 Airpressure Sensor and a Capacitattive Soil moisture Sensor
 */
 
 int MakeABreak = 5; // write every ... Seconds 
