@@ -55,7 +55,7 @@ String DataString =""; // holds the data to be written to the SD card
 
 
 /* Capacitative Soil Moisture Sensor ***************************************************/
-const int dry = 770; // value for dry sensor
+const int dry = 790; // value for dry sensor
 const int wet = 315; // value for wet sensor
 char SensorReading1[60];
 char SensorReading2[60];
@@ -88,7 +88,7 @@ void setup()
       // Use tweezers or short lines to short the RST pins only once
       // The orange LED lights flicker on and light up.
  
-  delay(5000);
+  delay(10000);
 
     Serial.begin(57600);
     while (! Serial); 
@@ -183,7 +183,7 @@ void GetSensorData(){
    int percentageHumidity = map(sensorVal, wet, dry, 100, 0); 
     
 
-    sprintf(SensorReading1, "SoilHumidity_RAW:, %d , SoilHumidityPercentage:, %d ,", sensorVal, percentageHumidity);
+    sprintf(SensorReading1, "SoilHumidity_RAW:,%d,SoilHumidityPercentage:,%d,", sensorVal, percentageHumidity);
     // Serial.println(SensorReading1);        
 
 /* BME 280 Sensor **********************************************************************/
@@ -195,7 +195,7 @@ void GetSensorData(){
     char hPaString [6];
     
     dtostrf(hPa, 6, 2, hPaString);
-    sprintf(SensorReading2, "Temperature:, %d ,C°, %s ,hPa, AirHumidity:, %i ", TEMP, hPaString, HUMID);
+    sprintf(SensorReading2, "Temperature:,%d,C°,AirPressure,%s,hPa,AirHumidity:,%i ", TEMP, hPaString, HUMID);
  //   Serial.println(SensorReading2);
           
 }
@@ -281,7 +281,7 @@ void printDateTime()
   time_t epoch = rtcCounter.getEpoch();
   struct tm* t = gmtime(&epoch);
   // Format and print the output
-  snprintf(DateTimeBuffer, sizeof(DateTimeBuffer), "%02d.%02d.%02d, %02d:%02d:%02d,", t->tm_mday, t->tm_mon + 1, t->tm_year - 100, 
+  snprintf(DateTimeBuffer, sizeof(DateTimeBuffer), "%02d.%02d.%02d,%02d:%02d:%02d,", t->tm_mday, t->tm_mon + 1, t->tm_year - 100, 
       t->tm_hour, t->tm_min, t->tm_sec);
 
 }
