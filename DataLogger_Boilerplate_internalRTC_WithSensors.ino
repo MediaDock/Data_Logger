@@ -36,7 +36,8 @@
                 In this Example we are using the BME 280 Airpressure Sensor and a Capacitattive Soil moisture Sensor
 */
 
-int MakeABreak = 5; // write every ... Seconds 
+int MakeABreak = 30; // write every ... Seconds 
+int PowerPIN = 6;
 
 /* Realtime Clock Globals **************************************************************/
 #include <RTCCounter.h>
@@ -55,8 +56,8 @@ String DataString =""; // holds the data to be written to the SD card
 
 
 /* Capacitative Soil Moisture Sensor ***************************************************/
-const int dry = 790; // value for dry sensor
-const int wet = 315; // value for wet sensor
+const int dry = 600; // value for dry sensor
+const int wet = 200; // value for wet sensor
 char SensorReading1[60];
 char SensorReading2[60];
 
@@ -91,8 +92,9 @@ void setup()
   delay(10000);
 
     Serial.begin(57600);
-    while (! Serial); 
-  
+    //while (! Serial); 
+    pinMode(PowerPIN,OUTPUT); //Activating The PowerPIN
+
   /**SD Card Module Init *******************************************/
     Serial.print("Initializing SD card..."); 
       if (!SD.begin(chipSelect)) {
@@ -148,6 +150,7 @@ void setup()
   
   Serial.println("Setup Completed!");
 
+
 }
 
 /****************************************************************************************/
@@ -161,11 +164,14 @@ void loop () {
 
     // Clear the interrupt flag
     rtcCounter.clearFlag(); 
+    digitalWrite(PowerPIN, HIGH);
+    delay(100);  
     GetSensorData();
     GetDataString();
     SaveData();
+    digitalWrite(PowerPIN, LOW);
+    delay(100); 
   }
-
   // Sleep until the next interrupt
   systemSleep();
 }
