@@ -36,7 +36,7 @@
                 In this Example we are using the BME 280 Airpressure Sensor and a Capacitattive Soil moisture Sensor
 */
 
-int MakeABreak = 30; // write every ... Seconds 
+int MakeABreak = 60; // write every ... Seconds 
 int PowerPIN = 6;
 
 /* Realtime Clock Globals **************************************************************/
@@ -150,6 +150,13 @@ void setup()
   
   Serial.println("Setup Completed!");
 
+  pinMode(LED_BUILTIN, OUTPUT); // Blink 10 Times if SD Card Initialized properly
+    for (int i = 0 ; i <= 10; i++) {
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(100);
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);  
+      } 
 
 }
 
