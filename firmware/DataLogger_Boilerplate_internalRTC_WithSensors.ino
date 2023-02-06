@@ -28,8 +28,8 @@
                 #############################                                   
                 Hardware used: Seeeduino xiao & its internal RTC                
                 Built for a Workshop at MediaDock HSLU D&K
-                Using the internals RTC of Seeedstudio xiao is mor Enegry efficient
-                It puts the Xiao into DeepSleep between Sensorreadings and Data Storage.
+                Using the internals RTC of Seeedstudio xiao 
+                It puts the Xiao into DeepSleep between Sensorreadings and Data Storage. 
                 But the Timestamp starts at 0:0:0 each time the System is powered up...
                 If you liike tho have the accurate Time and Date use a RTC module like DS3231 
 
@@ -65,6 +65,7 @@ char SensorReading2[60];
 /* BME 280 Globales ********************************************************************/
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+//#include <Wire.h>
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BME280 bme; // I2C
 int     TEMP        = 0;
@@ -104,52 +105,68 @@ void setup()
       }
     Serial.println("SD card initialized.");
 
+  /**File Initialization ******************************************/
 
-  /**File Initialization*******************************************/
-
-    int n = 0;
-    snprintf(filename, sizeof(filename), "Data%03d.csv", n); // includes a three-digit sequence number in the file name
+  int n = 0;
+  snprintf(filename, sizeof(filename), "Data%03d.csv", n); // includes a three-digit sequence number in the file name
     
     while (SD.exists(filename)) {
       n++;
       delay(100);
       snprintf(filename, sizeof(filename), "Data%03d.csv", n);
     }
+  Serial.print("new File initialized: ");
+  Serial.println(F(filename));
 
-    File myFile = SD.open(filename, FILE_WRITE);
 
-    if (myFile) {
-      myFile.close(); // close the file
+
+  /**File Categories Initialization *******************************/
+
+  File myFile = SD.open(filename, FILE_WRITE);
+    if(SD.exists(filename)) { // check the card is still there
+      myFile = SD.open(filename, FILE_WRITE); // now append new data file
+      if (myFile){
+        myFile.println("Date,Time,SoilHumidity RAW,SoilHumidity %,Temperature C°,AirPressure hPa, AirHumidity %");
+        myFile.close(); // close the file
+        Serial.println("Categories saved to File: Date,Time,SoilHumidity RAW,SoilHumidity %,Temperature C°,AirPressure hPa, AirHumidity %");
+      }
     }
+    else{
+        Serial.println("Error writing to file !");
+    }
+  
 
-    Serial.print("new File initialized: ");
-    Serial.println(F(filename));
 
   /*RTC Initialization **********************************************/
   
-  // Setup the RTCCounter
-  rtcCounter.begin();
+  rtcCounter.begin();  // Setup the RTCCounter
+  rtcCounter.setPeriodicAlarm(MakeABreak); // Set the alarm to generate an interrupt every 5s
+  setDateTime(2023, 1, 31, 0, 0, 0);   // Set the start date and time
+  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;  // Set the sleep mode
 
-  // Set the alarm to generate an interrupt every 5s
-  rtcCounter.setPeriodicAlarm(MakeABreak);
 
-  // Set the start date and time
-  setDateTime(2023, 1, 31, 0, 0, 0);
-
-  // Set the sleep mode
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
   /*BME Initialization **********************************************/
    
-   unsigned status;
-   status = bme.begin(0x76);  
-   
-   if (!status) {
-        Serial.println(F("BME280 allocation failed"));        
+    if (! bme.begin(0x76, &Wire)) {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        while (1);
     }
-  
+  Serial.println("-- Weather Station Scenario --");
+  Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
+  Serial.println("filter off");
+  bme.setSampling(Adafruit_BME280::MODE_FORCED,
+                  Adafruit_BME280::SAMPLING_X1, // temperature
+                  Adafruit_BME280::SAMPLING_X1, // pressure
+                  Adafruit_BME280::SAMPLING_X1, // humidity
+                  Adafruit_BME280::FILTER_OFF   );
+
   Serial.println("Setup Completed!");
 
+
+
+  /* BUILTIN LED StatusLight for completed Setup ***************************************/
+ 
   pinMode(LED_BUILTIN, OUTPUT); // Blink 10 Times if SD Card Initialized properly
     for (int i = 0 ; i <= 10; i++) {
         digitalWrite(LED_BUILTIN, LOW);
@@ -157,7 +174,6 @@ void setup()
         digitalWrite(LED_BUILTIN, HIGH);
         delay(100);  
       } 
-
 }
 
 /****************************************************************************************/
@@ -192,14 +208,13 @@ void GetSensorData(){
 
 /* Soil Moisture Sensor ****************************************************************/
 
-   int sensorVal = analogRead(A0);
-   int percentageHumidity = map(sensorVal, wet, dry, 100, 0); 
-    
-
-    sprintf(SensorReading1, "SoilHumidity_RAW:,%d,SoilHumidityPercentage:,%d,", sensorVal, percentageHumidity);
+    int sensorVal = analogRead(A0);
+    int percentageHumidity = map(sensorVal, wet, dry, 100, 0); 
+    sprintf(SensorReading1, "%d,%d,", sensorVal, percentageHumidity);
     // Serial.println(SensorReading1);        
 
 /* BME 280 Sensor **********************************************************************/
+    bme.takeForcedMeasurement();
     TEMP = bme.readTemperature();
     hPa = (bme.readPressure() / 100.0F);
     HUMID = bme.readHumidity();
@@ -208,7 +223,7 @@ void GetSensorData(){
     char hPaString [6];
     
     dtostrf(hPa, 6, 2, hPaString);
-    sprintf(SensorReading2, "Temperature:,%d,C°,AirPressure,%s,hPa,AirHumidity:,%i ", TEMP, hPaString, HUMID);
+    sprintf(SensorReading2, "%d,%s,%i ", TEMP, hPaString, HUMID);
  //   Serial.println(SensorReading2);
           
 }
@@ -270,9 +285,6 @@ void setDateTime(uint16_t year, uint8_t month, uint8_t day,
   // Use the tm struct to convert the parameters to and from an epoch value
   struct tm tm;
 
-  tm.tm_isdst = -1;
-  tm.tm_yday = 0;
-  tm.tm_wday = 0;
   tm.tm_year = year - 1900;
   tm.tm_mon = month - 1;
   tm.tm_mday = day;
