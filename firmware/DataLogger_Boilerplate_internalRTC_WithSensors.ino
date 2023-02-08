@@ -36,7 +36,8 @@
                 In this Example we are using the BME 280 Airpressure Sensor and a Capacitattive Soil moisture Sensor
 */
 
-int MakeABreak = 600;  // write every ... Seconds
+// write every ... Seconds
+int MakeABreak = 600;  
 int PowerPIN = 6;
 
 /* Realtime Clock Globals **************************************************************/
@@ -45,7 +46,7 @@ int PowerPIN = 6;
 char DateTimeBuffer[32];
 
 /* SD Card Globals **********************************************************************/
-// SD Card max Size: 16GB ---> FAT16 or FAT32 Formatted
+// ATTENTION: SD Card max Size: 16GB ---> FAT16 or FAT32 Formatted
 
 #include <SD.h> // 1.2.4 
 #include "SPI.h"
@@ -54,13 +55,11 @@ char filename[16];  // make it long enough to hold your longest file name, plus 
 const int chipSelect = 3;
 String DataString = "";  // holds the data to be written to the SD card
 
-
 /* Capacitative Soil Moisture Sensor ***************************************************/
 const int dry = 600;  // value for dry sensor
 const int wet = 200;  // value for wet sensor
 char SensorReading1[60];
 char SensorReading2[60];
-
 
 /* BME 280 Globales ********************************************************************/
 #include <Adafruit_Sensor.h>
@@ -78,10 +77,8 @@ unsigned long lastBME = 0UL;
 /* SETUP ********************************************************************************/
 /****************************************************************************************/
 
-
-
 void setup() {
-  // Sleep mode can intefere with reprogramming.
+  // ATTENTION: Sleep mode can intefere with reprogramming.
   // A startup delay makes things easier as it
   // provides a window to upload new code
   // If you want to reset the Seeed Studio XIAO SAMD21 , perform the following steps:
@@ -92,24 +89,24 @@ void setup() {
   delay(10000);
 
   Serial.begin(57600);
-  //while (! Serial);
-  pinMode(PowerPIN, OUTPUT);  //Activating The PowerPIN
+  //Activating the PowerPIN to power your Sensor only at work
+  pinMode(PowerPIN, OUTPUT);  
 
   /**SD Card Module Init *******************************************/
   Serial.print("Initializing SD card...");
   if (!SD.begin(chipSelect)) {
     Serial.println("SD Card initialization failed!");
     delay(2000);
-    return;  // don't do anything more: THE LOGGERR ONLY WORKS IF AN SD CARD IS DETECTED IN THE SDCARD READER
+    // ATTENTION: THE LOGGERR ONLY WORKS IF AN SD CARD IS DETECTED IN THE SDCARD READER
+    return;  
   }
   Serial.println("SD card initialized.");
 
 
   /**File Initialization*******************************************/
-
   int n = 0;
-  snprintf(filename, sizeof(filename), "Data%03d.csv", n);  // includes a three-digit sequence number in the file name
-
+  // includes a three-digit sequence number in the file name
+  snprintf(filename, sizeof(filename), "Data%03d.csv", n);  
   while (SD.exists(filename)) {
     n++;
     delay(100);
@@ -119,23 +116,19 @@ void setup() {
   File myFile = SD.open(filename, FILE_WRITE);
 
   if (myFile) {
-    myFile.close();  // close the file
+    // always close the file    
+    myFile.close(); 
   }
 
   Serial.print("new File initialized: ");
   Serial.println(F(filename));
 
   /*RTC Initialization **********************************************/
-
-  // Setup the RTCCounter
   rtcCounter.begin();
-
   // Set the alarm to generate an interrupt every 5s
   rtcCounter.setPeriodicAlarm(MakeABreak);
-
   // Set the start date and time
   setDateTime(2023, 1, 31, 0, 0, 0);
-
   // Set the sleep mode
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
@@ -147,12 +140,12 @@ void setup() {
       ;
   }
 
+  /* SETUP COMLETED -> LED Status Light for completed Setup ***************************************/
   Serial.println("Setup Completed!");
 
-
-  /* BUILTIN LED StatusLight for completed Setup ***************************************/
-  pinMode(LED_BUILTIN, OUTPUT);  // Blink 10 Times if SD Card Initialized properly
+  // Blink Onboard LED 10 Times if everything Initialized properly 
   for (int i = 0; i <= 10; i++) {
+  pinMode(LED_BUILTIN, OUTPUT);  
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
     digitalWrite(LED_BUILTIN, HIGH);
@@ -191,11 +184,8 @@ void loop() {
 void GetSensorData() {
 
   /* Soil Moisture Sensor ****************************************************************/
-
   int sensorVal = analogRead(A0);
   int percentageHumidity = map(sensorVal, wet, dry, 100, 0);
-
-
   sprintf(SensorReading1, "SoilHumidity_RAW:,%d,SoilHumidityPercentage:,%d,", sensorVal, percentageHumidity);
   // Serial.println(SensorReading1);
 
@@ -203,13 +193,10 @@ void GetSensorData() {
   TEMP = bme.readTemperature();
   hPa = (bme.readPressure() / 100.0F);
   HUMID = bme.readHumidity();
-
-
   char hPaString[6];
-
   dtostrf(hPa, 6, 2, hPaString);
   sprintf(SensorReading2, "Temperature:,%d,C°,AirPressure,%s,hPa,AirHumidity:,%i ", TEMP, hPaString, HUMID);
-  //   Serial.println(SensorReading2);
+  // Serial.println(SensorReading2);
 }
 
 
@@ -218,8 +205,8 @@ void GetSensorData() {
 /****************************************************************************************/
 
 void GetDataString() {
-  printDateTime();
 
+  printDateTime();
   DataString = String(DateTimeBuffer) + SensorReading1;
   DataString = DataString + SensorReading2;
   Serial.println(DataString);
@@ -231,11 +218,14 @@ void GetDataString() {
 /****************************************************************************************/
 
 void SaveData() {
-  if (SD.exists(filename)) {                 // check the card is still there
-    myFile = SD.open(filename, FILE_WRITE);  // now append new data file
+  if (SD.exists(filename)) {                 
+    // check the card is still there
+    myFile = SD.open(filename, FILE_WRITE);  
+    // now append new data file
     if (myFile) {
       myFile.println(DataString);
-      myFile.close();  // close the file
+      // always close the file
+      myFile.close();  
       Serial.println("Data saved to SD Card");
     }
   } else {
@@ -248,6 +238,7 @@ void SaveData() {
 /****************************************************************************************/
 
 void systemSleep() {
+  
   // If the alarm interrupt has not yet triggered
   if (!rtcCounter.getFlag()) {
 
