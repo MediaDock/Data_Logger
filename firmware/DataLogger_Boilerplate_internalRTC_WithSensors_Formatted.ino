@@ -112,9 +112,6 @@ void setup() {
     delay(100);
     snprintf(filename, sizeof(filename), "Data%03d.csv", n);
   }
-
-  File myFile = SD.open(filename, FILE_WRITE);
-
   if (myFile) {
     // always close the file    
     myFile.close(); 
@@ -122,6 +119,7 @@ void setup() {
 
   Serial.print("new File initialized: ");
   Serial.println(F(filename));
+
 
   /**File Categories Initialization *******************************/
 
