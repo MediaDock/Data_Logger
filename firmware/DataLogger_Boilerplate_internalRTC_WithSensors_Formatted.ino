@@ -36,30 +36,36 @@
                 In this Example we are using the BME 280 Airpressure Sensor and a Capacitattive Soil moisture Sensor
 */
 
-// write every ... Seconds
-int MakeABreak = 10;  
-int PowerPIN = 6;
+
+
+
+int MakeABreak = 600;  // YOUR CODE HERE: write every ... seconds this sets the interval
+
+/* Capacitative Soil Moisture Sensor ***************************************************/
+int MoisturePin = A0; // SensorPin of your MoistureSensor 
+int PowerPIN = 6; // MoistureSensor PowerPin (V)
+
+const int dry = 600;  // YOUR CODE HERE: value for dry sensor
+const int wet = 200;  // YOUR CODE HERE: value for wet sensor
+char SensorReading1[60];
+char SensorReading2[60];
 
 /* Realtime Clock Globals **************************************************************/
-#include <RTCCounter.h> // 1.0.1
+#include <RTCCounter.h> // version 1.0.1
 #include <time.h>
 char DateTimeBuffer[32];
 
 /* SD Card Globals **********************************************************************/
 // ATTENTION: SD Card max Size: 16GB ---> FAT16 or FAT32 Formatted
 
-#include <SD.h> // 1.2.4 
+#include <SD.h> // version 1.2.4 
 #include "SPI.h"
 File myFile;
 char filename[16];  // make it long enough to hold your longest file name, plus a null terminator
 const int chipSelect = 3;
 String DataString = "";  // holds the data to be written to the SD card
 
-/* Capacitative Soil Moisture Sensor ***************************************************/
-const int dry = 600;  // value for dry sensor
-const int wet = 200;  // value for wet sensor
-char SensorReading1[60];
-char SensorReading2[60];
+
 
 /* BME 280 Globales ********************************************************************/
 #include <Adafruit_Sensor.h>
@@ -81,7 +87,8 @@ void setup() {
   // ATTENTION: Sleep mode can intefere with reprogramming.
   // A startup delay makes things easier as it
   // provides a window to upload new code
-  // If you want to reset the Seeed Studio XIAO SAMD21 , perform the following steps:
+
+  // If you get stuck and want to reset the Seeed Studio XIAO SAMD21 , perform the following steps:
   // Connect the Seeed Studio XIAO SAMD21 to your computer.
   // Use tweezers or short lines to short the RST pins only once
   // The orange LED lights flicker on and light up.
@@ -141,7 +148,7 @@ void setup() {
   // Set the alarm to generate an interrupt every 5s
   rtcCounter.setPeriodicAlarm(MakeABreak);
   // Set the start date and time
-  setDateTime(2023, 2, 21, 0, 0, 0);
+  setDateTime(2023, 2, 27, 0, 0, 0);
   // Set the sleep mode
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
@@ -198,7 +205,7 @@ void GetSensorData() {
 
 /* Soil Moisture Sensor ****************************************************************/
 
-    int sensorVal = analogRead(A0);
+    int sensorVal = analogRead(MoisturePin);
     int percentageHumidity = map(sensorVal, wet, dry, 100, 0); 
     sprintf(SensorReading1, "%d,%d,", sensorVal, percentageHumidity);
     // Serial.println(SensorReading1);        
